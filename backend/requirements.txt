@@ -1,0 +1,35 @@
+# ── Eliz's LRC Generator — Core dependencies ──────────────
+
+# Web framework
+flask>=3.0.0
+flask-cors>=4.0.0
+
+# Audio processing
+librosa>=0.10.0
+soundfile>=0.12.0
+audioread>=3.0.0
+pydub>=0.25.0
+mutagen>=1.47.0
+
+# Text processing
+g2p-en>=2.1.0
+
+# Utilities
+numpy>=1.24.0
+scipy>=1.11.0
+tqdm>=4.65.0
+
+# ── AI / ML pipeline ───────────────────────────────────────
+# PyTorch with CUDA 12.8 is installed SEPARATELY by install.bat
+# because whisperx requires torch~=2.8.0. Do NOT rely on the
+# dependency resolver to pick torch — it may install a version
+# that conflicts with whisperx or lacks CUDA support.
+#
+# For NVIDIA GPUs (RTX 40/50-series, Blackwell):
+#   pip install torch==2.8.0+cu128 torchaudio==2.8.0+cu128 torchvision==0.23.0+cu128 --index-url https://download.pytorch.org/whl/cu128
+#
+# For CPU-only / macOS:
+#   pip install torch==2.8.0 torchaudio==2.8.0
+
+whisperx>=3.8.0
+demucs>=4.0.0

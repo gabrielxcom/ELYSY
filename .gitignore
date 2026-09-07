@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+venv/
+env/
+.venv/
+
+# Models (downloaded on first run)
+backend/models/
+*.pt
+*.bin
+
+# Temp files
+temp/
+*.tmp
+uploads/
+
+# Demucs output
+separated/
+
+# User data
+projects/              # saved projects (audio + project.json) — never commit
+*.lrc                  # generated lyric files
+*.srt                  # generated subtitle files
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env

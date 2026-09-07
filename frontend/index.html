@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ELYSY | Eliz's Lyrics Synchronizer</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/css/style.css">
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎵</text></svg>">
+</head>
+<body>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- App -->
+  <div class="app-container">
+
+    <!-- ═══ Header ═══ -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="header-logo">🎵</div>
+        <div>
+          <div class="header-title">ELYSY | Eliz's Lyrics Synchronizer</div>
+          <div class="header-subtitle">AI-Powered Word-by-Word Sync</div>
+        </div>
+      </div>
+
+      <div class="header-project-actions">
+        <button id="btn-create-project" class="btn btn-sm btn-secondary" title="Start fresh — clears audio, lyrics, and alignment">✨ Create New Project</button>
+        <button id="btn-load-project" class="btn btn-sm btn-secondary" title="Load a saved project">📂 Load Existing</button>
+        <button id="btn-save-project" class="btn btn-sm btn-secondary" title="Save current project">💾 Save</button>
+        <button id="btn-save-project-as" class="btn btn-sm btn-secondary" title="Save current project as a new project">💾 Save As New</button>
+        <button id="btn-reset-project" class="btn btn-sm btn-secondary" title="Clear alignment but keep audio and lyrics">↺ Reset Project</button>
+      </div>
+
+      <div class="header-actions">
+        <span class="header-badge" id="device-info">Device: detecting...</span>
+        <span class="header-badge">
+          <span class="dot" id="status-dot"></span>
+          <span id="status-text">Ready</span>
+        </span>
+      </div>
+    </header>
+
+    <!-- ═══ Main Content ═══ -->
+    <div class="main-content">
+
+      <!-- ── Left Panel: Audio + Lyrics ── -->
+      <aside class="panel panel-left">
+        <div class="panel-header">
+          <span class="panel-title">🎵 Audio & Lyrics</span>
+        </div>
+
+        <div class="panel-body">
+          <!-- Select language -->
+          <div class="form-row">
+            <label for="language-select" style="font-size:0.78rem;color:var(--text-secondary);">Select language</label>
+            <select id="language-select" class="language-select">
+              <option value="es">🇪🇸 Spanish</option>
+              <option value="en">🇬🇧 English</option>
+              <option value="ja">🇯🇵 Japanese</option>
+              <option value="zh">🇨🇳 Chinese</option>
+              <option value="ko">🇰🇷 Korean</option>
+              <option value="ru">🇷🇺 Russian</option>
+              <option value="fr">🇫🇷 French</option>
+              <option value="de">🇩🇪 German</option>
+              <option value="it">🇮🇹 Italian</option>
+              <option value="pt">🇵🇹 Portuguese</option>
+            </select>
+          </div>
+
+          <!-- Upload zone (smaller) -->
+          <div id="upload-zone" class="upload-zone upload-zone-sm">
+            <div class="upload-icon upload-icon-sm">🎤</div>
+            <div class="upload-text">Drop your audio file here</div>
+            <div class="upload-hint">MP3, WAV, FLAC, OGG, M4A — up to 100 MB</div>
+            <input type="file" id="audio-input" accept=".mp3,.wav,.flac,.ogg,.m4a,.aac" hidden>
+          </div>
+
+          <!-- Uploaded file info -->
+          <div id="upload-loaded" class="upload-loaded">
+            <div class="file-icon">🎵</div>
+            <div class="file-info">
+              <div class="file-name" id="file-name"></div>
+              <div class="file-meta" id="file-meta"></div>
+            </div>
+          </div>
+
+          <!-- Mode selector -->
+          <div class="mode-selector">
+            <button class="mode-btn active" data-mode="auto">🤖 AI Auto-Align</button>
+            <button class="mode-btn" data-mode="manual">👆 Manual Tap</button>
+          </div>
+
+          <!-- Lyrics row: label + Import LRC -->
+          <div class="form-row">
+            <label for="lyrics-textarea" style="font-size:0.78rem;color:var(--text-secondary);">Lyrics</label>
+            <button
+              id="btn-import-lrc"
+              class="btn btn-secondary btn-xs"
+              title="Load an existing .lrc file to edit it"
+              onclick="document.getElementById('lrc-file-input').click()"
+            >📥 Import LRC</button>
+          </div>
+          <div style="font-size:0.7rem;color:var(--text-muted);">One sentence per line</div>
+
+          <!-- Lyrics textarea -->
+          <textarea
+            id="lyrics-textarea"
+            class="lyrics-textarea"
+            placeholder="Paste your lyrics here, one sentence per line...&#10;&#10;Example:&#10;Hola mundo, cómo estás&#10;Te quiero mucho, de verdad&#10;La vida es bella, sin cesar"
+            >
+          </textarea>
+          <input
+            type="file"
+            id="lrc-file-input"
+            accept=".lrc,text/plain"
+            style="display:none;"
+            onchange="handleLrcFileSelected(this)"
+          >
+
+          <!-- Vocal sep + line count row -->
+          <div class="form-row">
+            <label class="toggle-row">
+              <input type="checkbox" id="vocal-sep-toggle" checked>
+              <span>Vocal separation</span>
+            </label>
+            <div class="lyrics-line-count" id="lyrics-line-count" style="margin-top:0;">0 lines</div>
+          </div>
+
+          <!-- Action buttons (smaller) -->
+          <button id="btn-auto-align" class="btn btn-primary btn-block">🚀 Auto-Align Lyrics</button>
+          <button id="btn-start-tap" class="btn btn-purple btn-block" style="display:none;">🎬 Start Tap Recording</button>
+
+          <!-- Rewritten shortcut hint -->
+          <div class="shortcut-hint">
+            <kbd>Space</kbd> Play/Pause (Tap in manual) · <kbd>←</kbd><kbd>→</kbd> Seek · <kbd>Enter</kbd> Align · <kbd>Esc</kbd> Cancel
+          </div>
+        </div>
+      </aside>
+
+      <!-- ── Center: Waveform + LRC Preview ── -->
+      <main class="panel panel-center">
+        <!-- Toolbar -->
+          <div class="waveform-toolbar">
+            <button id="btn-to-start" class="btn btn-sm btn-secondary" onclick="seekToStart()" title="Rewind to beginning">⏮</button>
+            <button id="btn-play" class="btn-play">▶️</button>
+            <button class="btn btn-sm btn-secondary" onclick="seekRelative(-3)" title="Rewind 3s">⏪ -3s</button>
+            <button class="btn btn-sm btn-secondary" onclick="seekRelative(3)" title="Forward 3s">⏩ +3s</button>
+          <span class="time-display">
+            <span id="time-current">0:00</span>
+            <span style="color:var(--text-muted);margin:0 4px;">/</span>
+            <span id="time-total">0:00</span>
+          </span>
+
+          <span style="flex:1;"></span>
+
+          <!-- Offset -->
+          <div class="offset-control">
+            <span style="font-size:0.7rem;color:var(--text-muted);">Offset:</span>
+            <input type="number" id="offset-input" class="offset-input" value="0.5" step="0.1" min="0.01" max="10">
+            <button id="btn-offset-minus" class="btn btn-sm btn-secondary" title="Shift earlier">◀</button>
+            <button id="btn-offset-plus" class="btn btn-sm btn-secondary" title="Shift later">▶</button>
+
+            <!-- Shift selected lines (multi-select) -->
+            <span style="font-size:0.7rem;color:var(--text-muted);">Shift sel:</span>
+            <button id="btn-shift-sel-minus" class="btn btn-sm btn-secondary" onclick="batchNudgeLines(-0.1)" title="Shift selected lines back 0.1s">−0.1</button>
+            <button id="btn-shift-sel-plus" class="btn btn-sm btn-secondary" onclick="batchNudgeLines(0.1)" title="Shift selected lines forward 0.1s">+0.1</button>
+
+            <!-- Undo / Redo -->
+            <button id="btn-undo" class="btn btn-sm btn-secondary" onclick="undo()" title="Undo (Ctrl+Z)">↩</button>
+            <button id="btn-redo" class="btn btn-sm btn-secondary" onclick="redo()" title="Redo (Ctrl+Shift+Z / Ctrl+Y)">↪</button>
+          </div>
+        </div>
+
+        <!-- Waveform -->
+        <div class="waveform-area" id="waveform-area">
+          <div id="waveform-placeholder" class="waveform-placeholder">
+            <div class="icon">🎶</div>
+            <div>Upload an audio file to see the waveform</div>
+          </div>
+          <div id="waveform"></div>
+        </div>
+
+        <!-- LRC Preview (under the waveform) -->
+        <div class="lrc-section">
+          <div class="panel-header">
+            <span class="panel-title">📋 LRC Preview</span>
+            <span style="font-size:0.7rem;color:var(--text-muted);" id="preview-info"></span>
+          </div>
+          <div class="lrc-preview" id="lrc-preview">
+            <div class="lrc-empty">
+              <div class="icon">📝</div>
+              <div>No lyrics aligned yet.</div>
+              <div style="margin-top:8px;font-size:0.75rem;color:var(--text-muted);">
+                Upload audio, paste lyrics,<br>and click <strong>Auto-Align</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tap Overlay -->
+        <div id="tap-overlay" class="tap-overlay">
+          <div class="tap-prompt">🎤 Tap along with the song!</div>
+          <div class="tap-key-hint">SPACEBAR</div>
+          <div class="tap-counter" id="tap-counter">Line 0 / 0</div>
+          <div class="tap-current-line" id="tap-current-line-text"></div>
+          <div class="btn-group">
+            <button id="btn-tap-complete" class="btn btn-primary tap-complete-btn">✅ Done — Refine Words</button>
+            <button id="btn-tap-cancel" class="btn btn-secondary">✕ Cancel</button>
+          </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay">
+          <div class="spinner"></div>
+          <div class="loading-text" id="loading-text">Processing...</div>
+        </div>
+      </main>
+
+      <!-- ── Right: Stats + Export ── -->
+      <aside class="panel panel-right">
+        <div class="panel-header">
+          <span class="panel-title">📊 Stats & Export</span>
+        </div>
+
+        <div class="panel-body" style="padding:8px 0;">
+          <!-- Stats -->
+          <div class="stats-card" style="margin:0 16px;">
+            <div class="stats-title">Alignment Quality & State</div>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-value" id="stat-total-words">—</div>
+                <div class="stat-label">Words</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="stat-lines">—</div>
+                <div class="stat-label">Lines</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="stat-match-rate">—</div>
+                <div class="stat-label">Match Rate</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="stat-vocal-duration">—</div>
+                <div class="stat-label">Vocal Duration</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="stat-song-duration">—</div>
+                <div class="stat-label">Song Duration</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="stat-project-state">—</div>
+                <div class="stat-label">Project State</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Guides & more -->
+          <div class="guides-section">
+            <div class="stats-title">Guides and more</div>
+            <img
+              id="guide-image"
+              class="guide-image"
+              alt="Guide"
+              src="https://gabrielx.com/wp-content/uploads/2026/09/elizplaceholder.jpg"
+            />
+            <div class="guide-pills">
+              <a id="guide-eliz" class="guide-pill" href="https://www.iamelizai.com" target="_blank" rel="noopener">Meet Eliz</a>
+              <a id="guide-more" class="guide-pill" href="https://gabrielx.com/open-source-mit-ai-tools/" target="_blank" rel="noopener">User Guide, Support, and more</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Export -->
+        <div class="export-section">
+          <div class="export-title">📥 Export</div>
+          <div class="btn-group wrap">
+            <button id="btn-export-enhanced" class="btn btn-primary btn-sm">⭐ Enhanced LRC</button>
+            <button id="btn-export-enhanced-srt" class="btn btn-purple btn-sm">⭐ Enhanced SRT</button>
+            <button id="btn-export-lrc" class="btn btn-secondary btn-sm">📄 Standard LRC</button>
+            <button id="btn-export-srt" class="btn btn-secondary btn-sm">🎬 SRT (Premiere)</button>
+            <button id="btn-export-json" class="btn btn-secondary btn-sm">🔧 JSON</button>
+          </div>
+          <div style="font-size:0.65rem;color:var(--text-muted);margin-top:8px;">
+            Enhanced LRC = karaoke apps<br>
+            Enhanced SRT = word-by-word captions for Premiere / CapCut<br>
+            Standard LRC / SRT = line-by-line
+          </div>
+        </div>
+      </aside>
+
+    </div><!-- /main-content -->
+  </div><!-- /app-container -->
+
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/7.8.6/wavesurfer.min.js"></script>
+
+  <!-- App -->
+  <script src="/js/app.js"></script>
+  <!-- Project Load Modal -->
+  <div id="project-modal" class="project-modal">
+    <div class="project-modal-card">
+      <div class="project-modal-header">
+        <span>📂 Load Project</span>
+        <button id="project-modal-close" class="btn btn-xs btn-secondary">×</button>
+      </div>
+      <div id="project-list" class="project-list"></div>
+    </div>
+  </div>
+</body>
+</html>
