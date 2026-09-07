@@ -1,7 +1,7 @@
 @echo off
 echo.
 echo ==========================================================
-echo   ELYSY | Eliz's Lyrics Synchronizer - Installer
+echo   ELYSY - Installer
 echo.
 echo   This will install all dependencies automatically.
 echo   It may take 5-15 minutes on first run.
@@ -25,7 +25,7 @@ ffmpeg -version >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo [WARN] FFmpeg is not installed.
-    echo        Eliz's LRC Generator needs FFmpeg to decode audio.
+    echo        ELYSY needs FFmpeg to decode audio.
     echo        Installing it now via winget...
     winget install Gyan.FFmpeg
     echo.

@@ -1,7 +1,7 @@
 @echo off
 echo.
 echo ==========================================================
-echo   ELYSY | Eliz's Lyrics Synchronizer
+echo   ELYSY - Eliz's Lyrics Synchronizer
 echo ==========================================================
 echo.
 
@@ -15,10 +15,10 @@ if exist "venv\Scripts\activate.bat" (
     exit /b 1
 )
 
-REM Start the server
+REM Start the server (the app auto-opens your browser)
 echo Starting server...
 echo.
-echo Open your browser to: http://127.0.0.1:8765
+echo If the browser does not open automatically, visit: http://127.0.0.1:8765
 echo Press Ctrl+C to stop the server.
 echo.
 
