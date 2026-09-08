@@ -69,18 +69,32 @@ echo.
 
 REM ----------------------------------------------------------
 REM  5. PyTorch with CUDA 12.8 (pinned for whisperx) + CPU fallback
+REM     NOTE: do NOT use --no-deps here. The cu128 wheels need the
+REM     nvidia-* runtime packages that pip installs automatically.
 REM ----------------------------------------------------------
 echo [STEP 3/4] Installing PyTorch (CUDA 12.8, pinned for whisperx)...
-echo This is the largest download (~2.5 GB). Please wait...
+echo This is the largest download (~2.5 GB + CUDA libraries). Please wait...
 echo.
-pip install --force-reinstall --no-deps torch==2.8.0+cu128 torchaudio==2.8.0+cu128 torchvision==0.23.0+cu128 --index-url https://download.pytorch.org/whl/cu128
+pip install --force-reinstall torch==2.8.0+cu128 torchaudio==2.8.0+cu128 torchvision==0.23.0+cu128 --index-url https://download.pytorch.org/whl/cu128
 echo.
-python -c "import torch; print('CUDA available:', torch.cuda.is_available())" >nul 2>&1
+
+REM Verify CUDA by checking the actual output text (not just exit code)
+python -c "import torch; print('CUDA available:', torch.cuda.is_available())" > cuda_check.txt 2>&1
+findstr /C:"CUDA available: True" cuda_check.txt >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
+    del cuda_check.txt
     echo [OK] PyTorch installed with CUDA support.
 ) else (
-    echo [WARN] GPU install failed. Falling back to CPU-only PyTorch...
-    pip install --force-reinstall --no-deps torch==2.8.0 torchaudio==2.8.0
+    type cuda_check.txt
+    del cuda_check.txt
+    echo.
+    echo [WARN] PyTorch cu128 was installed but CUDA was NOT detected.
+    echo        This is usually a driver issue. ELYSY needs an NVIDIA
+    echo        driver that supports CUDA 12.8 or newer.
+    echo        Check the top-right "CUDA Version" of: nvidia-smi
+    echo.
+    echo        Falling back to CPU-only mode (works, but slower)...
+    pip install --force-reinstall torch==2.8.0 torchaudio==2.8.0
 )
 echo.
 
