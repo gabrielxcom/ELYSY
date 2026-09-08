@@ -8,7 +8,9 @@ echo   It may take 5-15 minutes on first run.
 echo ==========================================================
 echo.
 
-REM Check for Python
+REM ----------------------------------------------------------
+REM  1. Python check (required)
+REM ----------------------------------------------------------
 python --version >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
     echo [ERROR] Python is not installed or not in PATH.
@@ -19,50 +21,60 @@ if %ERRORLEVEL% NEQ 0 (
 )
 echo [OK] Python found:
 python --version
+echo.
 
-REM Check for FFmpeg (required for audio decoding)
+REM ----------------------------------------------------------
+REM  2. FFmpeg check (recommended, NOT blocking)
+REM ----------------------------------------------------------
+REM ELYSY decodes WAV/FLAC/OGG natively. FFmpeg is only needed
+REM for MP3/M4A input. So we warn, not block.
 ffmpeg -version >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
+    echo [WARN] FFmpeg was not found on PATH.
+    echo        It is only required for MP3/M4A audio files.
+    echo        Install it later if needed:
+    echo        winget install Gyan.FFmpeg
+    echo        (then reopen your terminal so the PATH refreshes)
     echo.
-    echo [WARN] FFmpeg is not installed.
-    echo        ELYSY needs FFmpeg to decode audio.
-    echo        Installing it now via winget...
-    winget install Gyan.FFmpeg
+) else (
+    echo [OK] FFmpeg found.
     echo.
-    echo        IMPORTANT: close this window, reopen it, then run install.bat again.
-    echo        (FFmpeg is added to PATH only for NEW terminal windows.)
-    pause
-    exit /b 1
 )
-echo [OK] FFmpeg found.
 
-REM Create virtual environment
-echo.
+REM ----------------------------------------------------------
+REM  3. Virtual environment
+REM ----------------------------------------------------------
 echo [STEP 1/4] Creating virtual environment...
 if not exist "venv" (
     python -m venv venv
+    if %ERRORLEVEL% NEQ 0 (
+        echo [ERROR] Could not create virtual environment.
+        pause
+        exit /b 1
+    )
     echo [OK] Virtual environment created.
 ) else (
     echo [OK] Virtual environment already exists.
 )
-
-REM Activate venv
-call venv\Scripts\activate.bat
-
-REM Upgrade pip
 echo.
+
+REM ----------------------------------------------------------
+REM  4. Activate + upgrade pip
+REM ----------------------------------------------------------
+call venv\Scripts\activate.bat
 echo [STEP 2/4] Upgrading pip...
 python -m pip install --upgrade pip --quiet
-
-REM Install PyTorch - CUDA 12.8 pinned to 2.8.0 for whisperx compatibility
+echo [OK] pip upgraded.
 echo.
+
+REM ----------------------------------------------------------
+REM  5. PyTorch with CUDA 12.8 (pinned for whisperx) + CPU fallback
+REM ----------------------------------------------------------
 echo [STEP 3/4] Installing PyTorch (CUDA 12.8, pinned for whisperx)...
 echo This is the largest download (~2.5 GB). Please wait...
 echo.
-echo Forcing reinstall in place to avoid file-lock issues...
 pip install --force-reinstall --no-deps torch==2.8.0+cu128 torchaudio==2.8.0+cu128 torchvision==0.23.0+cu128 --index-url https://download.pytorch.org/whl/cu128
-
-REM Verify GPU; fall back to CPU if needed
+echo.
 python -c "import torch; print('CUDA available:', torch.cuda.is_available())" >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     echo [OK] PyTorch installed with CUDA support.
@@ -70,20 +82,25 @@ if %ERRORLEVEL% EQU 0 (
     echo [WARN] GPU install failed. Falling back to CPU-only PyTorch...
     pip install --force-reinstall --no-deps torch==2.8.0 torchaudio==2.8.0
 )
-
-REM Install core dependencies
 echo.
+
+REM ----------------------------------------------------------
+REM  6. Core dependencies
+REM ----------------------------------------------------------
 echo [STEP 4/4] Installing core dependencies...
 pip install -r backend\requirements.txt --quiet
-
-REM Verify
+echo [OK] Core dependencies installed.
 echo.
+
+REM ----------------------------------------------------------
+REM  7. Verify
+REM ----------------------------------------------------------
 echo [VERIFY] Checking installation...
 python -c "import torch; print('PyTorch', torch.__version__, '| CUDA:', torch.cuda.is_available())" 2>nul
-python -c "import whisperx; print('WhisperX OK')" 2>nul || echo [WARN] WhisperX may need additional setup.
 python -c "import flask; print('Flask OK')" 2>nul || echo [WARN] Flask may need additional setup.
-
+python -c "import whisperx; print('WhisperX OK')" 2>nul || echo [WARN] WhisperX may need additional setup.
 echo.
+
 echo ==========================================================
 echo   Installation Complete!
 echo.
