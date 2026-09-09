@@ -1,5 +1,7 @@
 # 🎵 ELYSY | Eliz's Lyrics Synchronizer
 
+![Project Image](https://gabrielx.com/wp-content/uploads/2026/09/ELYSY-1.jpg)
+
 **AI-Powered Word-by-Word Lyrics Synchronization — Free & Open Source (MIT)**
 
 Named in honor of **Eliz**, the sweetest vocalist. 🎤
@@ -78,3 +80,12 @@ chmod +x install.sh run.sh
 
 # 3. Open your browser
 → http://127.0.0.1:8765
+```
+
+--- 
+
+### Want to support more Open-Source projects? 🤖
+*All you need to do is:*
+## 🎵 Listen to our songs!
+### Visit [I am Eliz Ai .com](https://www.iamelizai.com) 🎵 
+We are on YouTube Music, Spotify and Apple Music
