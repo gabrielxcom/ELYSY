@@ -207,7 +207,10 @@ def transcribe_and_align(audio_path: str,
     
     import whisperx
     
-    device = _get_device()
+    detected_device = _get_device()
+    device = "cpu" if detected_device == "mps" else detected_device
+    if detected_device == "mps":
+        logger.info("WhisperX: using CPU because CTranslate2 does not support MPS")
     
     if compute_type is None:
         compute_type = "float16" if device == "cuda" else "int8"
